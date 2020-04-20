@@ -1,122 +1,78 @@
-var context;
-var compressor;
 var baseOctave = 4;
-
-function createKey(frequency){
-    let oscillator = context.createOscillator();
-    oscillator.frequency.value = frequency;
-    let gain = context.createGain();
-    gain.gain.setValueAtTime(0, context.currentTime);
-    oscillator.connect(gain);
-    gain.connect(compressor);
-    oscillator.start(0);
-    return gain;
-}
-
-const keys = {};
-const notes = [
-  { note: 'C', octave: baseOctave},
-  { note: 'D', octave: baseOctave},
-  { note: 'E', octave: baseOctave},
-  { note: 'F', octave: baseOctave},
-  { note: 'G', octave: baseOctave},
-  { note: 'A', octave: baseOctave},
-  { note: 'B', octave: baseOctave},
-  { note: 'C', octave: baseOctave + 1},
-  { note: 'D', octave: baseOctave + 1},
-  { note: 'E', octave: baseOctave + 1}
-]
+var piano;
 
 const keyBindings = {
-    '1': `C${baseOctave}`,
-    '2': `D${baseOctave}`,
-    '3': `E${baseOctave}`,
-    '4': `F${baseOctave}`,
-    '5': `G${baseOctave}`,
-    '6': `A${baseOctave}`,
-    '7': `B${baseOctave}`,
-    '8': `C${baseOctave + 1}`,
-    '9': `D${baseOctave + 1}`,
-    '0': `E${baseOctave + 1}`
-}
+  "1": `C${baseOctave}`,
+  "2": `D${baseOctave}`,
+  "3": `E${baseOctave}`,
+  "4": `F${baseOctave}`,
+  "5": `G${baseOctave}`,
+  "6": `A${baseOctave}`,
+  "7": `B${baseOctave}`,
+  "8": `C${baseOctave + 1}`,
+  "9": `D${baseOctave + 1}`,
+  "0": `E${baseOctave + 1}`,
+};
 
 function init() {
-  try {
-    window.AudioContext = window.AudioContext||window.webkitAudioContext;
-    context = new AudioContext();
-    compressor = context.createDynamicsCompressor();
-    compressor.threshold.setValueAtTime(-50, context.currentTime);
-    compressor.knee.setValueAtTime(40, context.currentTime);
-    compressor.ratio.setValueAtTime(12, context.currentTime);
-    compressor.attack.setValueAtTime(0, context.currentTime);
-    compressor.release.setValueAtTime(0.25, context.currentTime);
-    compressor.connect(context.destination);
-
-    notes.forEach(it => keys[it.note + it.octave] = createKey(getFrequency(it.note, it.octave)));
-  }
-  catch(e) {
-    alert('Web Audio API is not supported in this browser');
-  }
+  piano = new Tone.Sampler(
+    {
+      A0: "A0.[mp3|ogg]",
+      C1: "C1.[mp3|ogg]",
+      "D#1": "Ds1.[mp3|ogg]",
+      "F#1": "Fs1.[mp3|ogg]",
+      A1: "A1.[mp3|ogg]",
+      C2: "C2.[mp3|ogg]",
+      "D#2": "Ds2.[mp3|ogg]",
+      "F#2": "Fs2.[mp3|ogg]",
+      A2: "A2.[mp3|ogg]",
+      C3: "C3.[mp3|ogg]",
+      "D#3": "Ds3.[mp3|ogg]",
+      "F#3": "Fs3.[mp3|ogg]",
+      A3: "A3.[mp3|ogg]",
+      C4: "C4.[mp3|ogg]",
+      "D#4": "Ds4.[mp3|ogg]",
+      "F#4": "Fs4.[mp3|ogg]",
+      A4: "A4.[mp3|ogg]",
+      C5: "C5.[mp3|ogg]",
+      "D#5": "Ds5.[mp3|ogg]",
+      "F#5": "Fs5.[mp3|ogg]",
+      A5: "A5.[mp3|ogg]",
+      C6: "C6.[mp3|ogg]",
+      "D#6": "Ds6.[mp3|ogg]",
+      "F#6": "Fs6.[mp3|ogg]",
+      A6: "A6.[mp3|ogg]",
+      C7: "C7.[mp3|ogg]",
+      "D#7": "Ds7.[mp3|ogg]",
+      "F#7": "Fs7.[mp3|ogg]",
+      A7: "A7.[mp3|ogg]",
+      C8: "C8.[mp3|ogg]",
+    },
+    {
+      release: 1,
+      baseUrl: "./audio/",
+    }
+  ).toMaster();
 }
-
-
-
-function play(key){
-    var note = keys[key];
-    if (note == undefined) return;
-    note.gain.cancelScheduledValues(context.currentTime);
-    note.gain.setTargetAtTime(1, context.currentTime, 0.01);
-    note.gain.setTargetAtTime(0.0, context.currentTime + 0.03, 0.1);
-}
-
 
 document.body.addEventListener("keydown", (event) => {
-    if (context == null){
-        init();
-    }
+  if (piano == null) {
+    init();
+  }
 
-    var key = event.key;
+  var key = event.key;
 
-    var note = keyBindings[key];
+  var note = keyBindings[key];
 
-    if (note == undefined) return;
+  if (note == undefined) return;
 
-    play(note);
-    
-    document.getElementById(`key-${key}`).classList.add('key-pressed');
+  piano.triggerAttackRelease(note, "4n");
+
+  document.getElementById(`key-${key}`).classList.add("key-pressed");
 });
-
 
 document.body.addEventListener("keyup", (event) => {
-    var key = event.key;
+  var key = event.key;
 
-    var note = keyBindings[key];
-
-    if (note == undefined) return;
-    
-    document.getElementById(`key-${key}`).classList.remove('key-pressed');
+  document.getElementById(`key-${key}`).classList.remove("key-pressed");
 });
-
-function getBaseFrequency(note){
-  const notes = {
-    'C': 16.35,
-    'D': 18.35,
-    'E': 20.60,
-    'F': 21.83,
-    'G': 24.50,
-    'A': 27.50,
-    'B': 30.87
-  };
-
-  return notes[note];
-}
-
-
-function getFrequency(note, octave){
-  var frequency = getBaseFrequency(note);
-  return raiseOctaves(frequency, octave);
-}
-
-function raiseOctaves(frequency, octaves){
-  return octaves <= 0 ? frequency : raiseOctaves(frequency * 2, octaves - 1);
-}
