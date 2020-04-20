@@ -1,5 +1,6 @@
 var context;
 var compressor;
+var baseOctave = 4;
 
 function createKey(frequency){
     let oscillator = context.createOscillator();
@@ -13,18 +14,30 @@ function createKey(frequency){
 }
 
 const keys = {};
-const audio = {};
+const notes = [
+  { note: 'C', octave: baseOctave},
+  { note: 'D', octave: baseOctave},
+  { note: 'E', octave: baseOctave},
+  { note: 'F', octave: baseOctave},
+  { note: 'G', octave: baseOctave},
+  { note: 'A', octave: baseOctave},
+  { note: 'B', octave: baseOctave},
+  { note: 'C', octave: baseOctave + 1},
+  { note: 'D', octave: baseOctave + 1},
+  { note: 'E', octave: baseOctave + 1}
+]
+
 const keyBindings = {
-    '1': 'C',
-    '2': 'D',
-    '3': 'E',
-    '4': 'F',
-    '5': 'G',
-    '6': 'A',
-    '7': 'B',
-    '8': 'C2',
-    '9': 'D2',
-    '0': 'E2'
+    '1': `C${baseOctave}`,
+    '2': `D${baseOctave}`,
+    '3': `E${baseOctave}`,
+    '4': `F${baseOctave}`,
+    '5': `G${baseOctave}`,
+    '6': `A${baseOctave}`,
+    '7': `B${baseOctave}`,
+    '8': `C${baseOctave + 1}`,
+    '9': `D${baseOctave + 1}`,
+    '0': `E${baseOctave + 1}`
 }
 
 function init() {
@@ -39,16 +52,7 @@ function init() {
     compressor.release.setValueAtTime(0.25, context.currentTime);
     compressor.connect(context.destination);
 
-    keys['C'] = createKey(261.63);
-    keys['D'] = createKey(293.66);
-    keys['E'] = createKey(329.63);
-    keys['F'] = createKey(349.23);
-    keys['G'] = createKey(392.00);
-    keys['A'] = createKey(440.00);
-    keys['B'] = createKey(493.88);
-    keys['C2'] = createKey(523.25);
-    keys['D2'] = createKey(587.33);
-    keys['E2'] = createKey(659.25);
+    notes.forEach(it => keys[it.note + it.octave] = createKey(getFrequency(it.note, it.octave)));
   }
   catch(e) {
     alert('Web Audio API is not supported in this browser');
@@ -79,7 +83,7 @@ document.body.addEventListener("keydown", (event) => {
 
     play(note);
     
-    document.getElementById(`key-${note.toLowerCase()}`).classList.add('key-pressed');
+    document.getElementById(`key-${key}`).classList.add('key-pressed');
 });
 
 
@@ -90,6 +94,29 @@ document.body.addEventListener("keyup", (event) => {
 
     if (note == undefined) return;
     
-    document.getElementById(`key-${note.toLowerCase()}`).classList.remove('key-pressed');
+    document.getElementById(`key-${key}`).classList.remove('key-pressed');
 });
 
+function getBaseFrequency(note){
+  const notes = {
+    'C': 16.35,
+    'D': 18.35,
+    'E': 20.60,
+    'F': 21.83,
+    'G': 24.50,
+    'A': 27.50,
+    'B': 30.87
+  };
+
+  return notes[note];
+}
+
+
+function getFrequency(note, octave){
+  var frequency = getBaseFrequency(note);
+  return raiseOctaves(frequency, octave);
+}
+
+function raiseOctaves(frequency, octaves){
+  return octaves <= 0 ? frequency : raiseOctaves(frequency * 2, octaves - 1);
+}
