@@ -1,20 +1,6 @@
 var context;
 var compressor;
 
-var useRealSounds = localStorage.getItem("realSounds");
-if (useRealSounds == undefined){
-  useRealSounds = "true";
-}
-
-useRealSounds = useRealSounds === "true";
-
-var useRealSoundsCheck = document.getElementById("real");
-useRealSoundsCheck.checked = useRealSounds;
-useRealSoundsCheck.addEventListener('change', () => {
-  useRealSounds = useRealSoundsCheck.checked;
-  localStorage.setItem("realSounds", useRealSounds);
-});
-
 function createKey(frequency){
     let oscillator = context.createOscillator();
     oscillator.frequency.value = frequency;
@@ -24,10 +10,6 @@ function createKey(frequency){
     gain.connect(compressor);
     oscillator.start(0);
     return gain;
-}
-
-function createAudio(src){
-  return new Howl({ src: [src] });
 }
 
 const keys = {};
@@ -67,18 +49,6 @@ function init() {
     keys['C2'] = createKey(523.25);
     keys['D2'] = createKey(587.33);
     keys['E2'] = createKey(659.25);
-
-    audio['C'] = createAudio('audio/261-C.mp3');
-    audio['D'] = createAudio('audio/293-D.mp3');
-    audio['E'] = createAudio('audio/329-E.mp3');
-    audio['F'] = createAudio('audio/349-F.mp3');
-    audio['G'] = createAudio('audio/391-G.mp3');
-    audio['A'] = createAudio('audio/440-A.mp3');
-    audio['B'] = createAudio('audio/495-B.mp3');
-    audio['C2'] = createAudio('audio/523-C.mp3');
-    audio['D2'] = createAudio('audio/587-D.mp3');
-    audio['E2'] = createAudio('audio/659-E.mp3');
-
   }
   catch(e) {
     alert('Web Audio API is not supported in this browser');
@@ -88,18 +58,11 @@ function init() {
 
 
 function play(key){
-    if (!useRealSounds){
-      var note = keys[key];
-      if (note == undefined) return;
-      note.gain.cancelScheduledValues(context.currentTime);
-      note.gain.setTargetAtTime(1, context.currentTime, 0.01);
-      note.gain.setTargetAtTime(0.0, context.currentTime + 0.03, 0.1);
-    } else {
-      var note = audio[key];
-      if (note == undefined) return;
-      note.stop();
-      note.play();
-    }
+    var note = keys[key];
+    if (note == undefined) return;
+    note.gain.cancelScheduledValues(context.currentTime);
+    note.gain.setTargetAtTime(1, context.currentTime, 0.01);
+    note.gain.setTargetAtTime(0.0, context.currentTime + 0.03, 0.1);
 }
 
 
