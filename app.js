@@ -55,6 +55,28 @@ function init() {
   ).toMaster();
 }
 
+function onTouchDown(key){
+  if (piano == null) {
+    init();
+  }
+
+  console.log(key);
+
+  var note = keyBindings[key];
+
+  if (note == undefined) return;
+
+  piano.triggerAttackRelease(note, "4n");
+
+  document.getElementById(`key-${key}`).classList.add("key-pressed");
+}
+
+
+function onTouchUp(key){
+  document.getElementById(`key-${key}`).classList.remove("key-pressed");
+}
+
+
 document.body.addEventListener("keydown", (event) => {
   if (piano == null) {
     init();
