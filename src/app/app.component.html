@@ -1,0 +1,13 @@
+<div id="piano">
+  <div
+    class="key"
+    id="key-{{ key }}"
+    *ngFor="let key of keyOrders"
+    [class.key-pressed]="pressed.includes(key)"
+    (mousedown)="onKeyDown(key)"
+    (mouseup)="onKeyUp(key)"
+    (mouseleave)="onKeyUp(key)"
+  >
+    {{ keyBindings[key] }} ({{ key }})
+  </div>
+</div>
