@@ -1,11 +1,11 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   piano: any;
   baseOctave = 4;
   keyOrders = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
@@ -23,6 +23,11 @@ export class AppComponent {
   };
 
   pressed: string[] = [];
+
+  autoPlayTimeout: number | undefined = undefined;
+  typing = false;
+
+  lastSong: string = '';
 
   private createPiano() {
     this.piano = new Tone.Sampler(
@@ -67,11 +72,19 @@ export class AppComponent {
 
   @HostListener('document:keydown', ['$event'])
   onDocumentKeyDown(event: KeyboardEvent) {
+    if (this.typing){
+      return;
+    }
+    this.cancelAutoplay();
     this.onKeyDown(event.key);
   }
 
   @HostListener('document:keyup', ['$event'])
   onDocumentKeyUp(event: KeyboardEvent) {
+    if (this.typing){
+      return;
+    }
+    this.cancelAutoplay();
     this.onKeyUp(event.key);
   }
 
@@ -79,6 +92,7 @@ export class AppComponent {
     if (this.piano == null) {
       this.createPiano();
     }
+
     let note: string = this.keyBindings[key];
 
     if (note == null) return;
@@ -92,4 +106,40 @@ export class AppComponent {
   onKeyUp(key: string) {
     this.pressed = this.pressed.filter((it) => it !== key);
   }
+
+  ngOnInit(): void {
+    this.lastSong = localStorage.getItem('piano-last-song') || '';
+  }
+
+  cancelAutoplay(){
+    window.clearTimeout(this.autoPlayTimeout);
+  }
+
+  play(){
+    this.cancelAutoplay();
+    this.autoplay(this.lastSong);
+  }
+
+  autoplay(song: string, speed: number = 200){
+    if (song.length === 0){
+      return;
+    }
+    this.autoPlayTimeout = window.setTimeout(() => {
+      this.onKeyDown(song[0]);
+      setTimeout(() => {
+        this.onKeyUp(song[0]);
+      }, speed / 2);
+      this.autoplay(song.substring(1), speed);
+    }, speed);
+  }
+
+  updateSong(song: string){
+    this.lastSong = song;
+    localStorage.setItem('piano-last-song', this.lastSong);
+  }
+
+  onSongInput(event: any){
+    this.updateSong(event.target.value);
+  }
+
 }

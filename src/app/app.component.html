@@ -11,3 +11,8 @@
     {{ keyBindings[key] }} ({{ key }})
   </div>
 </div>
+
+<div id="autoplay">
+  <input type="text" (input)='onSongInput($event)' (focus)="typing = true" (focusout)="typing = false" [value]="lastSong"/>
+  <button (click)="play()">Autoplay</button>
+</div>
