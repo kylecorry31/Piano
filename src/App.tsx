@@ -122,9 +122,9 @@ function App() {
           <div
             key={note}
             className={`key ${pressed[index] ? 'key-pressed' : ''}`}
-            onMouseDown={() => setPianoKeyPressed(index, true)}
-            onMouseUp={() => setPianoKeyPressed(index, false)}
-            onMouseLeave={() => !shouldAutoPlay && setPianoKeyPressed(index, false)}
+            onPointerDown={() => setPianoKeyPressed(index, true)}
+            onPointerUp={() => setPianoKeyPressed(index, false)}
+            onPointerLeave={() => !shouldAutoPlay && setPianoKeyPressed(index, false)}
           >
             {note} ({keyBindings[index]})
           </div>
